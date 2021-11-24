@@ -1,0 +1,2 @@
+requires PCAN https://www.peak-system.com/Drivers.523.0.html?&L=1
+depends on PCAN-Basic API provided in https://python-can.readthedocs.io/en/master/installation.html

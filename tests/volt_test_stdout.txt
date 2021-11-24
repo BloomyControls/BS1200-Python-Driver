@@ -1,0 +1,107 @@
+PS C:\Projects\BS1200 Software\PCAN Python Driver> & C:/Users/mikhailk/AppData/Local/Programs/Python/Python39/python.exe "c:/Projects/BS1200 Software/PCAN Python Driver/src/bs1200.py"
+Fan Status: No Fault
+Temp Sensor 1:  28 °C
+Temp Sensor 2:  29 °C
+Temp Sensor 3:  29 °C
+cell1_4 TS: 11:32:17:659266
+cell5_8 TS: 11:32:17:654374
+cell9_12 TS: 11:32:17:659508
+Cell 1: 0.000000 V | Cell 2: 0.000000 V  | Cell 3: 0.000000 V  | Cell 4: 0.000000 V
+Cell 5: 0.000007 V | Cell 6: 0.000007 V  | Cell 7: 0.000008 V  | Cell 8: 0.000000 V
+Cell 9: 0.000000 V | Cell 10: 0.000000 V | Cell 11: 0.000000 V | Cell 12: 0.000000 V
+---------------
+Setting Cell 1 to 1 Volt
+cell1_4 TS: 11:32:17:774260
+cell5_8 TS: 11:32:17:779381
+cell9_12 TS: 11:32:17:774501
+Cell 1: 1.000000 V | Cell 2: 0.000000 V  | Cell 3: 0.000000 V  | Cell 4: 0.000000 V
+Cell 5: 0.000000 V | Cell 6: 0.000000 V  | Cell 7: 0.000000 V  | Cell 8: 0.000000 V
+Cell 9: 0.000000 V | Cell 10: 0.000000 V | Cell 11: 0.000000 V | Cell 12: 0.000000 V
+---------------
+Setting Cell 2 to 1 Volt
+cell1_4 TS: 11:32:17:894257
+cell5_8 TS: 11:32:17:899376
+cell9_12 TS: 11:32:17:894498
+Cell 1: 0.998400 V | Cell 2: 1.000800 V  | Cell 3: 0.000000 V  | Cell 4: 0.000000 V
+Cell 5: 0.000000 V | Cell 6: 0.000000 V  | Cell 7: 0.000000 V  | Cell 8: 0.000000 V
+Cell 9: 0.000000 V | Cell 10: 0.000000 V | Cell 11: 0.000000 V | Cell 12: 0.000000 V
+---------------
+Setting Cell 3 to 1 Volt
+cell1_4 TS: 11:32:18:014251
+cell5_8 TS: 11:32:18:014373
+cell9_12 TS: 11:32:18:014493
+Cell 1: 1.002400 V | Cell 2: 1.000800 V  | Cell 3: 0.998400 V  | Cell 4: 0.000000 V
+Cell 5: 0.000000 V | Cell 6: 0.000000 V  | Cell 7: 0.000000 V  | Cell 8: 0.000000 V
+Cell 9: 0.000000 V | Cell 10: 0.000000 V | Cell 11: 0.000000 V | Cell 12: 0.000000 V
+---------------
+Setting Cell 4 to 1 Volt
+cell1_4 TS: 11:32:18:134247
+cell5_8 TS: 11:32:18:134367
+cell9_12 TS: 11:32:18:134489
+Cell 1: 1.001600 V | Cell 2: 0.998400 V  | Cell 3: 0.997600 V  | Cell 4: 1.000800 V
+Cell 5: 0.000000 V | Cell 6: 0.000000 V  | Cell 7: 0.000000 V  | Cell 8: 0.000000 V
+Cell 9: 0.000000 V | Cell 10: 0.000000 V | Cell 11: 0.000000 V | Cell 12: 0.000000 V
+---------------
+Setting Cell 5 to 1 Volt
+cell1_4 TS: 11:32:18:289244
+cell5_8 TS: 11:32:18:294360
+cell9_12 TS: 11:32:18:289482
+Cell 1: 1.000000 V | Cell 2: 1.000800 V  | Cell 3: 0.999200 V  | Cell 4: 1.002400 V
+Cell 5: 1.000800 V | Cell 6: 0.000000 V  | Cell 7: 0.000000 V  | Cell 8: 0.000000 V
+Cell 9: 0.000000 V | Cell 10: 0.000000 V | Cell 11: 0.000000 V | Cell 12: 0.000000 V
+---------------
+Setting Cell 6 to 1 Volt
+cell1_4 TS: 11:32:18:414242
+cell5_8 TS: 11:32:18:414358
+cell9_12 TS: 11:32:18:399477
+Cell 1: 0.996800 V | Cell 2: 1.000800 V  | Cell 3: 0.997600 V  | Cell 4: 1.000800 V
+Cell 5: 1.000800 V | Cell 6: 1.001600 V  | Cell 7: 0.000000 V  | Cell 8: 0.000000 V
+Cell 9: 0.000000 V | Cell 10: 0.000000 V | Cell 11: 0.000000 V | Cell 12: 0.000000 V
+---------------
+Setting Cell 7 to 1 Volt
+cell1_4 TS: 11:32:18:534237
+cell5_8 TS: 11:32:18:529355
+cell9_12 TS: 11:32:18:524473
+Cell 1: 1.001600 V | Cell 2: 1.000800 V  | Cell 3: 1.000800 V  | Cell 4: 1.000800 V
+Cell 5: 0.998400 V | Cell 6: 0.999200 V  | Cell 7: 0.998400 V  | Cell 8: 0.000000 V
+Cell 9: 0.000000 V | Cell 10: 0.000000 V | Cell 11: 0.000000 V | Cell 12: 0.000000 V
+---------------
+Setting Cell 8 to 1 Volt
+cell1_4 TS: 11:32:18:664338
+cell5_8 TS: 11:32:18:664451
+cell9_12 TS: 11:32:18:659571
+Cell 1: 1.000000 V | Cell 2: 1.001600 V  | Cell 3: 0.998400 V  | Cell 4: 0.999200 V
+Cell 5: 1.000800 V | Cell 6: 1.000800 V  | Cell 7: 0.999200 V  | Cell 8: 0.998400 V
+Cell 9: 0.000000 V | Cell 10: 0.000000 V | Cell 11: 0.000000 V | Cell 12: 0.000000 V
+---------------
+Setting Cell 9 to 1 Volt
+cell1_4 TS: 11:32:18:769334
+cell5_8 TS: 11:32:18:794443
+cell9_12 TS: 11:32:18:784568
+Cell 1: 1.000000 V | Cell 2: 1.000000 V  | Cell 3: 0.998400 V  | Cell 4: 1.000000 V
+Cell 5: 1.000000 V | Cell 6: 0.997600 V  | Cell 7: 1.000800 V  | Cell 8: 0.998400 V
+Cell 9: 0.997600 V | Cell 10: 0.000000 V | Cell 11: 0.000000 V | Cell 12: 0.000000 V
+---------------
+Setting Cell 10 to 1 Volt
+cell1_4 TS: 11:32:18:909329
+cell5_8 TS: 11:32:18:904443
+cell9_12 TS: 11:32:18:909559
+Cell 1: 0.998400 V | Cell 2: 0.999200 V  | Cell 3: 0.999200 V  | Cell 4: 1.003200 V
+Cell 5: 1.000800 V | Cell 6: 1.000000 V  | Cell 7: 1.000000 V  | Cell 8: 1.000000 V
+Cell 9: 1.000000 V | Cell 10: 1.000800 V | Cell 11: 0.000000 V | Cell 12: 0.000000 V
+---------------
+Setting Cell 11 to 1 Volt
+cell1_4 TS: 11:32:19:019328
+cell5_8 TS: 11:32:19:019441
+cell9_12 TS: 11:32:19:019557
+Cell 1: 1.000000 V | Cell 2: 0.998400 V  | Cell 3: 0.997600 V  | Cell 4: 1.000000 V
+Cell 5: 1.001600 V | Cell 6: 1.000000 V  | Cell 7: 1.000000 V  | Cell 8: 1.000800 V
+Cell 9: 0.998400 V | Cell 10: 1.001600 V | Cell 11: 1.000800 V | Cell 12: 0.000000 V
+---------------
+Setting Cell 12 to 1 Volt
+cell1_4 TS: 11:32:19:199323
+cell5_8 TS: 11:32:19:194432
+cell9_12 TS: 11:32:19:179551
+Cell 1: 1.000800 V | Cell 2: 1.000800 V  | Cell 3: 0.999200 V  | Cell 4: 0.999200 V
+Cell 5: 0.999200 V | Cell 6: 1.000000 V  | Cell 7: 0.998400 V  | Cell 8: 1.000800 V
+Cell 9: 1.000000 V | Cell 10: 1.000800 V | Cell 11: 0.998400 V | Cell 12: 0.999200 V

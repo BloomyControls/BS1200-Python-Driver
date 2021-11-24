@@ -1,0 +1,11 @@
+README.md
+pyproject.toml
+setup.cfg
+src/BS1200_driver.egg-info/PKG-INFO
+src/BS1200_driver.egg-info/SOURCES.txt
+src/BS1200_driver.egg-info/dependency_links.txt
+src/BS1200_driver.egg-info/requires.txt
+src/BS1200_driver.egg-info/top_level.txt
+src/bs1200/__init__.py
+src/bs1200/can_frames.py
+src/bs1200/driver.py
