@@ -1,6 +1,22 @@
-[build-system]
-requires = [
-    "setuptools>=42",
-    "wheel"
+[project]
+name = "BS1200_driver"
+version = "1.2.5"
+authors = [{ name = "Mikhail Kharitonov", email = "mikhail.kharitonov@bloomy.com"}]
+description= "Python interface to the Bloomy BS1200"
+readme = "README.md"
+dependencies = ["python-can==4.0", "uptime", "nisyscfg"]
+
+[project_urls]
+"Homepage" = "https://github.com/BloomyControls/BS1200-Python-Driver"
+"Bug Tracker" = "https://github.com/BloomyControls/BS1200-Python-Driver/issues"
+classifiers= [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent"
 ]
+[options]
+python_requires = ">=3.7"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"

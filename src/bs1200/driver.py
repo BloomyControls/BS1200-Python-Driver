@@ -17,7 +17,7 @@ class BS1200(object):
         unit_ids.sort()
         self.box_ids = []
         for b in unit_ids:
-            if b in range(0,16):
+            if b in range(1,16):
                 self.box_ids.append(b)
             else:
                 raise IndexError('Invalid BS1200 Box ID: %d' % b)

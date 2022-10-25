@@ -1,4 +1,4 @@
-from struct import pack, unpack
+from struct import pack
 from can import Message
 
 def cell_V_set_1_4(box_id: int, cell_1_4_v: list[float]) -> Message:
