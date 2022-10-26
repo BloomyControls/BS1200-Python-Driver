@@ -79,6 +79,8 @@ class BS1200(object):
         return True if boxid in self.box_ids else False
 
     def query_system_status(self, boxid: int):
+        """
+        """
         if self.box_id_check(boxid):
             try: 
                 msg = ff.status(boxid)

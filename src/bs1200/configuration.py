@@ -1,10 +1,12 @@
 import os
-import string
+import sys
+import time
 import nisyscfg
 from configparser import ConfigParser
 import xml.etree.ElementTree as ET
 from bs1200.cfg_tools import *
 import json
+import threading
 
 class ConfigTools(object):
 
@@ -59,7 +61,8 @@ class ConfigTools(object):
         if restart:
             self.__restart_unit()
 
-    def get_all_settings(self, export_to_file: bool) -> str:
+    def get_all_settings(self, export_to_file: bool,
+                               file_name: str = "bs1200_cfg.json") -> str:
         """
         Returns a prettyified JSON string of the BS1200 configuration values, optionally exporting to
         a generated bs1200_cfg.json file at the path the method is executed from.
@@ -81,7 +84,7 @@ class ConfigTools(object):
                 }
             }
         if export_to_file:
-            with open("bs1200_cfg.json", 'w') as f:
+            with open(file_name, 'w') as f:
                 f.write(json.dumps(config, indent=4))
         return json.dumps(config)
         
@@ -139,6 +142,7 @@ class ConfigTools(object):
         rt_path = "/ni-rt/startup/Data/BS1200 Configuration.ini"
         temp_path =  "BS1200 Configuration.ini"
         cfgfile_path = self.FTP.getFile(rt_path, temp_path)
+        self.__fix_XML_tags(cfgfile_path)
         #build an XML tree for the .ini file 🤦‍♂️ 
         tree = ET.parse(cfgfile_path)
         root = tree.getroot()
@@ -175,7 +179,7 @@ class ConfigTools(object):
         self.FTP.uploadFile('ni-rt.ini', 'ni-rt.ini')
         #remove local copy of cfg file and update the FTP helper's stored target address
         os.remove('ni-rt.ini')
-        self.FTP.tgt_address = new_ip_address
+        self.FTP.tgt_address = self.ip_address = new_ip_address
 
 
     def set_tcp_settings(self, ip_address : str, tcp_port: int, tcp_interval: int):
@@ -245,6 +249,7 @@ class ConfigTools(object):
         rt_path = "/ni-rt/startup/Data/BS1200 Configuration.ini"
         temp_path =  "BS1200 Configuration.ini"
         cfgfile_path = self.FTP.getFile(rt_path, temp_path)
+        self.__fix_XML_tags(cfgfile_path)
         #build an XML tree for the .ini file 🤦‍♂️ 
         tree = ET.parse(cfgfile_path)
         root = tree.getroot()
@@ -322,12 +327,35 @@ class ConfigTools(object):
         #open a nisyscfg session to the BS1200 to restart it
         with nisyscfg.Session(self.ip_address, self.user, self.pwd) as s:
             #updates IP address for the ConfigTools instance to the new IP address once restart complete
-            print(f"Restarting BS1200 ({self.ip_address})...")
-            self.ip_address = s.restart(timeout=120)
+            ev = self.__start_anim(f"Restarting BS1200 ({self.ip_address})... ")
+            self.ip_address = self.ip_address = s.restart()
+            ev.set()
+            #do this again just in case
             self.FTP.tgt_address = self.ip_address
-            print(f"BS1200 at {self.ip_address} is back online")
+            print("\n"+f"BS1200 at {self.ip_address} is back online")
+
+    def __animate(self, loadingtext: str):
+        """Animation loop for the restart wait"""
+        idx = 0
+        animation = "|/-\\"
+        for idx in range(0,len(animation)):
+            sys.stdout.write("\r"+loadingtext+animation[idx % len(animation)])
+            sys.stdout.flush()
+            idx += 1
+            time.sleep(0.1)
+
+    def __start_anim(self, text):
+        """Starts threaded event looping the animation"""
+        ev = threading.Event()
+        def _loop(ev, text):
+            while not ev.is_set():
+                self.__animate(text)
+        threading.Thread(target=_loop, args=(ev, text)).start()
+        return ev
 
     def __fix_XML_tags(self, xml_file):
+        """BS1200 units sometimes have duplicate opening tag for root in XML, 
+        need to remove that for elementree"""
         lines = []
         with open(xml_file) as f:
             lines = f.readlines()
