@@ -10,14 +10,19 @@ import threading
 
 class ConfigTools(object):
 
-    def __init__(self, tgt_address: str, username: str = "admin", password: str = ""):
+    def __init__(self, tgt_address, username= "admin", password= ""):
+        """
+        tgt_address: str, 
+        username: str = "admin", 
+        password: str = ""
+        """
         self.ip_address = tgt_address
         self.user = username
         self.pwd = password
         self.FTP = FtpHelper(tgt_address, username, password)
         self.ini_parser = ConfigParser()
 
-    def apply_config_file(self, cfg_file_path: str, restart: bool = True):
+    def apply_config_file(self, cfg_file_path, restart: bool = True):
         """
         Takes in a .json file with BS1200 configuration object in the following format
         and applies the parsed settings. By default the target device is restarted after applying
@@ -182,7 +187,7 @@ class ConfigTools(object):
         self.FTP.tgt_address = self.ip_address = new_ip_address
 
 
-    def set_tcp_settings(self, ip_address : str, tcp_port: int, tcp_interval: int):
+    def set_tcp_settings(self, ip_address : str, cmd_port: int, cmd_interval_ms: int):
         """
         Update the TCP related settings in the Ethernet configuration
         """
@@ -201,12 +206,12 @@ class ConfigTools(object):
         iterator = tree.iter()
         for item in iterator:
             if(item.text == 'Port'):
-                next(iterator).text = str(tcp_port)
+                next(iterator).text = str(cmd_port)
         #reset the iterator
         iterator = tree.iter()
         for item in iterator:
             if(item.text == 'Loop Time ms'):
-                next(iterator).text = str(tcp_interval)
+                next(iterator).text = str(cmd_interval_ms)
         #Rewrite the temp config file
         tree.write(cfgfile_path, encoding="utf-8", xml_declaration=True, short_empty_elements=False)
         self.__replace_xml_declaration(cfgfile_path)
@@ -215,7 +220,7 @@ class ConfigTools(object):
         os.remove(temp_path)
 
 
-    def set_udp_settings(self, udp_port: int, udp_interval: int):
+    def set_udp_settings(self, rep_port: int, rep_interval_ms: int):
         """
         Update the UDP related settings in the Ethernet configuration
         """
@@ -229,12 +234,12 @@ class ConfigTools(object):
         iterator = tree.iter()
         for item in iterator:
             if(item.text == 'Port'):
-                next(iterator).text = str(udp_port)
+                next(iterator).text = str(rep_port)
         #reset the iterator
         iterator = tree.iter()
         for item in iterator:
             if(item.text == 'Loop Delay RT ms'):
-                next(iterator).text = str(udp_interval)
+                next(iterator).text = str(rep_interval_ms)
         #Rewrite the temp config file
         tree.write(cfgfile_path, encoding="utf-8", xml_declaration=True, short_empty_elements=False)
         self.__replace_xml_declaration(cfgfile_path)

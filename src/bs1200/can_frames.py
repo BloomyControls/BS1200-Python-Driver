@@ -1,7 +1,7 @@
 from struct import pack
 from can import Message
 
-def cell_V_set_1_4(box_id: int, cell_1_4_v: list[float]) -> Message:
+def cell_V_set_1_4(box_id: int, cell_1_4_v: list) -> Message:
     """
     Sets the Voltage Setpoints for Cells 1-4, range 0 to 5 V
     """
@@ -19,7 +19,7 @@ def cell_V_set_1_4(box_id: int, cell_1_4_v: list[float]) -> Message:
     except ValueError as e:
         print("Error generating Cell_Set_V_1_4 message:", e)
 
-def cell_V_set_5_8(box_id: int, cell_5_8_v: list[float]) -> Message:
+def cell_V_set_5_8(box_id: int, cell_5_8_v: list) -> Message:
     """
     Sets the Voltage Setpoints for Cells 1-4, range 0 to 5 V
     """
@@ -37,7 +37,7 @@ def cell_V_set_5_8(box_id: int, cell_5_8_v: list[float]) -> Message:
     except ValueError as e:
         print("Error generating Cell_Set_V_5_8 message:", e)
 
-def cell_V_set_9_12(box_id: int, cell_9_12_v: list[float]) -> Message:
+def cell_V_set_9_12(box_id: int, cell_9_12_v: list) -> Message:
     """
     Sets the Voltage Setpoints for Cells 1-4, range 0 to 5 V
     """
@@ -77,7 +77,7 @@ def hil_mode_trig(box_id: int, enable: bool) -> Message:
         print("Error generating HIL mode trigger frame:", e)
         return None
 
-def dio_set_1_8(box_id: int, dio_val: list[bool], dio_direction: list[bool]) -> Message:
+def dio_set_1_8(box_id: int, dio_val: list, dio_direction: list) -> Message:
     """
     Returns message to configure the output 
     value and direction for the Digital IO

@@ -12,7 +12,7 @@ class BS1200(object):
     Communicates with Bloomny BS1200 via Peak Systems PCAN-FD USB Interface 
     """
 
-    def __init__(self, unit_ids: list[int]) -> None:
+    def __init__(self, unit_ids: list) -> None:
         cfg = {'fd': False, 'f_clock_mhz' : 20}
         unit_ids.sort()
         self.box_ids = []
@@ -197,7 +197,7 @@ class BS1200(object):
             except pcan.PcanError as e:
                 print("Error getting cell "+str(channel)+" Voltage: ", e)
 
-    def readback_V_all(self, boxid) -> list[float]:
+    def readback_V_all(self, boxid) -> list:
         """
         Return list of voltage values (V) for all cell channels.
         """
@@ -281,7 +281,7 @@ class BS1200(object):
             except pcan.PcanError as e:
                 print("Error getting cell "+str(channel)+" Current: ", e)
                 
-    def readback_I_all(self, boxid: int) -> list[float]:
+    def readback_I_all(self, boxid: int) -> list:
         """
         Return current readbacks (A) for all cell channels.
         """
@@ -323,7 +323,7 @@ class BS1200(object):
             except pcan.PcanError as e:
                 print("Error getting AI Channel "+str(channel)+" Voltage: ", e)
 
-    def readback_ai_all(self, boxid: int) -> list[float]:
+    def readback_ai_all(self, boxid: int) -> list:
         """
         Readback Analog Input Channels 1-8
         """
@@ -356,7 +356,7 @@ class BS1200(object):
         except pcan.PcanError as e:
             print("Error occurred sending AO setpoint message to BS1200 ID {:d}:".format(boxid), e)
 
-    def dio_set(self, boxid: int, dio_dir: list[int], dio_en: list[int]) -> bool:
+    def dio_set(self, boxid: int, dio_dir: list, dio_en: list) -> bool:
         """
         Set the direction of Digital IO Channels 1-8. 
         dio_dir: List of Boolean values designating direction of each DIO Channel.
@@ -371,7 +371,7 @@ class BS1200(object):
         except pcan.PcanError as e:
             print("Error occurred transmitting DIO Set frame to BS1200:", e)
         
-    def readback_dio(self, boxid) -> list[bool]:
+    def readback_dio(self, boxid) -> list:
         """
         Returns state of Digital Input/Output Lines
         """
