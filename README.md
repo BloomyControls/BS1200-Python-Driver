@@ -36,7 +36,22 @@ Requires Python version 3.6 or greater
 ### Upcoming/Planned Features
  * NI-XNET (CAN) USB adapter support
  * Ethernet (TCPIP/UDP) support 
-
+## Installation
+Install the package by saving the .whl file from the project releases page https://github.com/BloomyControls/BS1200-Python-Driver/releases/
+Open command line, powershell, or another terminal to the location the .whl file was saved and run the following command to install using pip package manager
+Windows:
+```
+pip install "\path\to\whl\file\BS1200_driver-X.X.X-py3-none-any.whl"
+```
+Linux:
+```
+pip3 install "/path/to/whl/file/BS1200_driver-X.X.X-py3-none-any.whl"
+```
+Alternative to downloading a release, the library may be built to the project /dist/ directory by running the command 
+```
+python -m build
+```
+from the same directory the project's pyproject.toml file is found, and install using pip from the freshly built .whl in the /dist/ directory.
 ## Use Instructions
 Once the package has been installed to the python environment, the `BS1200` driver class may be used to communicate action statuses with target BS1200 units over a PCAN adapter, or to configure settings for a BS1200 at a designated IP address using the `ConfigTools` class. 
 ### BS1200 (driver)
