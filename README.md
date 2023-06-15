@@ -120,7 +120,8 @@ BS1200 Configuration JSON object example:
     "CAN_Settings": {
         "Box_ID": 1,
         "Write_Period_ms": 5
-    }
+    },
+	"Enable_SafetyInterlock" : false
 }
 ```
 By default the methods used to set configuration values will restart the connected target using the NI System Configuration API. It is highly reccomended to restart the unit whenever updating values to prevent a desynchronization between the target IP address saved to class properties and currently used IP address of the device.

@@ -42,7 +42,8 @@ class ConfigTools(object):
             {
                 "Box_ID"            : 1,
                 "Write_Period_ms"   : 5
-            }
+            },
+	        "Enable_SafetyInterlock" : true
         }
         """
         with open(cfg_file_path) as json_file:
@@ -55,6 +56,7 @@ class ConfigTools(object):
             config["Ethernet_Settings"]['TCP_Cmd_Interval_ms'], 
             config["Ethernet_Settings"]['UDP_Read_Port'], 
             config["Ethernet_Settings"]['UDP_Read_Interval_ms'])
+        en_interlock = config["Enable_SafteyInterlock"]
         #print(mode)       
         #print(can_cfg)
         #print(eth_cfg)
@@ -62,7 +64,7 @@ class ConfigTools(object):
         self.apply_general_settings(mode, False)
         self.apply_can_config(can_cfg, False)
         self.apply_ethernet_settings(eth_cfg, False)
-
+        self.enable_safety_interlock(en_interlock, False)
         if restart:
             self.__restart_unit()
 
@@ -75,6 +77,7 @@ class ConfigTools(object):
         ethernet = self.get_ethernet_settings()
         can = self.get_can_settings()
         mode = self.get_protocol()
+        interlock = self.interlock_enabled()
         config = {'Protocol' : mode, 'IP_Address' : ethernet.IP_Address,
                 'Ethernet_Settings':{
                     'TCP_Cmd_Port'      : ethernet.Command_Port,
@@ -86,7 +89,8 @@ class ConfigTools(object):
                 {
                     'Box_ID'            : can.box_id,
                     'Write_Period_ms'   : int(can.publish_period_us/1000)
-                }
+                },
+                'Enable_SafetyInterlock' : interlock
             }
         if export_to_file:
             with open(file_name, 'w') as f:
@@ -165,12 +169,37 @@ class ConfigTools(object):
         if restart: 
             self.__restart_unit()
 
+    def enable_safety_interlock(self, interlock, restart: bool = True):
+        """
+        Enables or disables the BS1200 Safety Interlock feature
+        """
+        rt_path = "/ni-rt/startup/Data/BS1200 Configuration.ini"
+        temp_path =  "BS1200 Configuration.ini"
+        cfgfile_path = self.FTP.getFile(rt_path, temp_path)
+        self.__fix_XML_tags(cfgfile_path)
+        #build an XML tree for the .ini file 🤦‍♂️ 
+        tree = ET.parse(cfgfile_path)
+        root = tree.getroot()
+        #Replace Enable_Cell_Inhibit
+        root[3].text = "TRUE" if interlock else "FALSE"
+        #Rewrite the temp config file
+        tree.write(cfgfile_path, encoding="utf-8", xml_declaration=True, short_empty_elements=False)
+        #replace the configuration file on the target
+        self.__replace_xml_declaration(cfgfile_path)
+        self.FTP.uploadFile(cfgfile_path, rt_path)
+        os.remove(temp_path)
+        #restart unit by default
+        if restart: 
+            self.__restart_unit()
 
     def set_ip_address(self, new_ip_address: str):
         """
         Sets a new IP Address for the target BS1200, restarting the unit and updating
         the ip address used by the ConfigTools for further configuration method calls
         """
+        #no broadcast bytes allowed
+        if("255" in new_ip_address):
+            raise ValueError("Broadcast bytes are not allowed for the unit IP address")
         #get the ni-rt.ini file from the BS1200 controller root directory
         self.FTP.getFile('ni-rt.ini', 'ni-rt.ini')
         #open the local copy of the cfg file and set the IP Address parameter of the
@@ -247,7 +276,7 @@ class ConfigTools(object):
         self.FTP.uploadFile(cfgfile_path, rt_path)
         os.remove(temp_path)
     
-    def get_can_settings(self) -> CAN_Settings:
+    def get_can_settings(self):
         """
         Retreive the can settings from the target BS1200
         """
@@ -261,7 +290,7 @@ class ConfigTools(object):
         os.remove(temp_path)
         return CAN_Settings(int(root[0][3].text),  int(root[0][4].text))
     
-    def get_ethernet_settings(self) -> Ethernet_Settings:
+    def get_ethernet_settings(self):
         """
         Retreive the ethernet settings and IP address from the target device
         """
@@ -306,8 +335,23 @@ class ConfigTools(object):
         os.remove(temp_path2)
         os.remove('ni-rt.ini')
         return Ethernet_Settings(ip, tcp_port, tcp_interval, udp_port, udp_interval)
+    
+    def interlock_enabled(self):
+        """
+        Retreive the state of the Safety Interlock from the target BS1200
+        """
+        rt_path = "/ni-rt/startup/Data/BS1200 Configuration.ini"
+        temp_path =  "BS1200 Configuration.ini"
+        cfgfile_path = self.FTP.getFile(rt_path, temp_path)
+        self.__fix_XML_tags(cfgfile_path)
+        #build an XML tree for the .ini file 🤦‍♂️ 
+        tree = ET.parse(cfgfile_path)
+        root = tree.getroot()
+        os.remove(temp_path)
+        return True if root[3].text == "TRUE" else False
 
-    def get_protocol(self) -> str:
+
+    def get_protocol(self):
         """
         Get the procotol form the general settings
         """
@@ -333,7 +377,7 @@ class ConfigTools(object):
         with nisyscfg.Session(self.ip_address, self.user, self.pwd) as s:
             #updates IP address for the ConfigTools instance to the new IP address once restart complete
             ev = self.__start_anim(f"Restarting BS1200 ({self.ip_address})... ")
-            self.ip_address = self.ip_address = s.restart()
+            self.ip_address = s.restart()
             ev.set()
             #do this again just in case
             self.FTP.tgt_address = self.ip_address

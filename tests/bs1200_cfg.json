@@ -12,5 +12,6 @@
     {
         "Box_ID"            : 1,
         "Write_Period_ms"   : 5
-    }
+    },
+	"Enable_SafetyInterlock" : true
 }

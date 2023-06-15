@@ -1,0 +1,15 @@
+{
+    "Protocol": "CAN",
+    "IP_Address": "192.168.1.102",
+    "Ethernet_Settings": {
+        "TCP_Cmd_Port": "12345",
+        "TCP_Cmd_Interval_ms": "20",
+        "UDP_Read_Port": "54321",
+        "UDP_Read_Interval_ms": "10"
+    },
+    "CAN_Settings": {
+        "Box_ID": 2,
+        "Write_Period_ms": 5.5
+    },
+	"Enable_SafetyInterlock" : true
+} 

@@ -1,0 +1,84 @@
+<html>
+  <body>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+      <div class="mermaid">
+    
+        classDiagram
+          class BS1200 {
+            ai_v_output_txt : str
+            box_ids : list
+            buffer : BufferedReader
+            bus : PcanBus
+            cell_i_output_txt : str
+            cell_v_output_txt : str
+            notifier : Notifier
+            ao_set(boxid: int, AO1_Voltage: float, AO2_Voltage: float) bool
+            box_id_check(boxid) bool
+            cell_enable(boxid: int, channel: int, status: bool)
+            cell_enable_all(boxid: int, status: bool)
+            channel_check(channel: int) bool
+            close()
+            config_can_publishing(boxid: int, dio_en: bool, ao_en: bool, ai_en: bool)
+            dio_set(boxid: int, dio_dir: list, dio_en: list) bool
+            hil_mode(boxid: int, enable_HIL: bool) bool
+            query_system_status(boxid: int)
+            readback_I_all(boxid: int) list
+            readback_V_all(boxid) list
+            readback_ai_all(boxid: int) list
+            readback_ai_v(boxid: int, channel: int) float
+            readback_cell_I(boxid: int, channel: int) float
+            readback_cell_V(boxid: int, channel: int) float
+            readback_dio(boxid) list
+            scale_current(currentIn, to_eng_units: bool)
+            scale_volts(voltsIn: float, to_eng_units: bool) float
+            set_I_all(boxid: int, sink_i: float, source_i: float)
+            set_V_all(boxid, tgt_volt: float)
+            set_cell_I_sink(boxid: int, channel: int, sink_current: float) Message
+            set_cell_I_source(boxid: int, channel: int, source_current: float) Message
+            set_cell_V(boxid: int, channel: int, voltage: float) Message
+          }
+          class CAN_Settings {
+            box_id : int
+            publish_period_us : int
+          }
+          class ConfigTools {
+            FTP
+            ini_parser : ConfigParser
+            ip_address : str
+            pwd : str
+            user : str
+            apply_can_config(can_cfg: CAN_Settings, restart: bool)
+            apply_config_file(cfg_file_path, restart: bool)
+            apply_ethernet_settings(tcpip_cfg: Ethernet_Settings, restart: bool)
+            apply_general_settings(protocol: Protocol, restart: bool)
+            get_all_settings(export_to_file: bool, file_name: str) str
+            get_can_settings() CAN_Settings
+            get_ethernet_settings() Ethernet_Settings
+            get_protocol() str
+            set_ip_address(new_ip_address: str)
+            set_tcp_settings(ip_address: str, cmd_port: int, cmd_interval_ms: int)
+            set_udp_settings(rep_port: int, rep_interval_ms: int)
+          }
+          class Ethernet_Settings {
+            Command_Interval_ms : int
+            Command_Port : int
+            IP_Address : str
+            Reporting_Interval_ms : int
+            Reporting_Port : int
+          }
+          class FtpHelper {
+            password : str
+            tgt_address : str
+            username : str
+            getFile(tgt_path, dest_path) str
+            uploadFile(src_path, tgt_path)
+          }
+          class Protocol {
+            CAN : int
+            Ethernet : int
+          }
+          FtpHelper --* ConfigTools : FTP
+  
+       </div>
+  </body>
+</html>

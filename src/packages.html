@@ -1,0 +1,25 @@
+<html>
+  <body>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+      <div class="mermaid">
+    
+        classDiagram
+          class bs1200 {
+          }
+          class can_frames {
+          }
+          class cfg_tools {
+          }
+          class configuration {
+          }
+          class driver {
+          }
+          bs1200 --> cfg_tools
+          bs1200 --> configuration
+          bs1200 --> driver
+          configuration --> cfg_tools
+          driver --> can_frames
+  
+       </div>
+  </body>
+</html>
