@@ -56,15 +56,15 @@ class ConfigTools(object):
             config["Ethernet_Settings"]['TCP_Cmd_Interval_ms'], 
             config["Ethernet_Settings"]['UDP_Read_Port'], 
             config["Ethernet_Settings"]['UDP_Read_Interval_ms'])
-        en_interlock = config["Enable_SafteyInterlock"]
+        en_interlock = config["Enable_SafetyInterlock"]
         #print(mode)       
         #print(can_cfg)
         #print(eth_cfg)
 
         self.apply_general_settings(mode, False)
+        self.enable_safety_interlock(en_interlock, False)
         self.apply_can_config(can_cfg, False)
         self.apply_ethernet_settings(eth_cfg, False)
-        self.enable_safety_interlock(en_interlock, False)
         if restart:
             self.__restart_unit()
 
