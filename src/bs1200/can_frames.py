@@ -107,8 +107,8 @@ def ao_set_1_2(box_id: int, ao1_voltage: float, ao2_voltage: float) -> Message:
     """
     try:
         arb_id = 544 + box_id
-        ao1 = pack("<h", ao1_voltage)
-        ao2 = pack("<h", ao2_voltage)
+        ao1 = pack("<H", ao1_voltage)
+        ao2 = pack("<H", ao2_voltage)
         ao_payload = ao1 + ao2 + bytes(4) #pad payload with 4 empty bytes (as seen in CAN DB)
         frame = Message(arbitration_id = arb_id,
                         is_extended_id = False,
@@ -210,7 +210,7 @@ def cell_voltage_set_all(box_id, v_all: float) -> Message:
     """
     try: 
         arb_id = 1280 + box_id
-        volt_val = pack("<h", v_all)
+        volt_val = pack("<H", v_all)
         frame = Message(arbitration_id= arb_id, 
                         is_extended_id = False, 
                         data = volt_val, 
@@ -230,7 +230,7 @@ def cell_voltage_setpoint(box_id, channel: int, volt_val: int) -> Message:
     """
     try: 
         arb_id = 1296 + box_id
-        source_val = pack("<h", volt_val)
+        source_val = pack("<H", volt_val)
         frame = Message(arbitration_id= arb_id, 
                         is_extended_id = False, 
                         data = bytes([channel-1])+source_val, 

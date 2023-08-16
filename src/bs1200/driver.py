@@ -192,7 +192,7 @@ class BS1200(object):
                     if msg.arbitration_id == readbacks[frame_i].arbitration_id:
                         rx_msg = msg
                         break
-                cell_volts = self.scale_volts(unpack('<h', rx_msg.data[cell_i*2:cell_i*2+2])[0], True)
+                cell_volts = self.scale_volts(unpack('<H', rx_msg.data[cell_i*2:cell_i*2+2])[0], True)
                 return cell_volts
             except pcan.PcanError as e:
                 print("Error getting cell "+str(channel)+" Voltage: ", e)
@@ -218,7 +218,7 @@ class BS1200(object):
                     break
             for channel in range(1,13):
                 frame, start, end = ((channel-1)//4, 2*((channel-1)%4), 2*((channel-1)%4)+2)
-                cell_volts[channel-1] = self.scale_volts(unpack('<h', rx_frames[frame].data[start:end])[0], True)     
+                cell_volts[channel-1] = self.scale_volts(unpack('<H', rx_frames[frame].data[start:end])[0], True)     
             return cell_volts
 
     def set_cell_I_sink(self, boxid: int, channel: int, sink_current: float) -> Message:
@@ -318,7 +318,7 @@ class BS1200(object):
                     if msg.arbitration_id == readbacks[frame_i].arbitration_id:
                         rx_msg = msg
                         break
-                ai_volts = self.scale_volts(unpack('<h', rx_msg.data[cell_i*2:cell_i*2+2])[0], True)
+                ai_volts = self.scale_volts(unpack('<H', rx_msg.data[cell_i*2:cell_i*2+2])[0], True)
                 return ai_volts
             except pcan.PcanError as e:
                 print("Error getting AI Channel "+str(channel)+" Voltage: ", e)
