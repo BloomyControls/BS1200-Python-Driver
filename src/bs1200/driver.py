@@ -52,22 +52,22 @@ class BS1200(object):
                     "\nCell 5:\t{:5f} A\t| Cell 6:\t{:5f} A\t| Cell 7:\t{:5f} A\t| Cell 8:\t{:5f} A"+
                     "\nCell 9:\t{:5f} A\t| Cell 10:\t{:5f} A\t| Cell 11:\t{:5f} A\t| Cell 12:\t{:5f} A")
     
-    def scale_volts(self, voltsIn: float, to_eng_units: bool) -> float:
+    def scale_volts(self, voltsIn, recieving : bool):
         """
         Helper method to scale voltage value from or to microvolts.
-        Set to_eng_units True to scale from microvolts-> volts (for recieved vals)
-        Set False to scale from volts -> microvolts (for transmitted vals)
+        (for recieved vals) Set recieving True to scale from millivolts (int) -> volts 
+         (for transmitted vals) Set False to scale from volts (float) -> millivolts (int)
         """
-        return (voltsIn*0.0001) if to_eng_units else (voltsIn/0.0001)
+        return (float(voltsIn*0.0001)) if recieving  else (int(voltsIn/0.0001))
 
-    def scale_current(self, currentIn, to_eng_units: bool):
+    def scale_current(self, currentIn, recieving: bool):
         """
         Helper method to scale current values from Amps to scaled values used by BS1200
         set to_eng_units.
         True to convert Scaled milliamps -> Amps (for recieved vals)
         set False to convert Amps -> scaled Milliamps (to transmit)
         """
-        return (((currentIn/10) - 3276.8)/1000) if to_eng_units else int((currentIn*10)*1000)
+        return (((currentIn/10) - 3276.8)/1000) if recieving else int((currentIn*10)*1000)
 
     def close(self):
         self.bus.shutdown()
@@ -192,7 +192,7 @@ class BS1200(object):
                     if msg.arbitration_id == readbacks[frame_i].arbitration_id:
                         rx_msg = msg
                         break
-                cell_volts = self.scale_volts(unpack('<e', rx_msg.data[cell_i*2:cell_i*2+2])[0], True)
+                cell_volts = self.scale_volts(unpack('<h', rx_msg.data[cell_i*2:cell_i*2+2])[0], True)
                 return cell_volts
             except pcan.PcanError as e:
                 print("Error getting cell "+str(channel)+" Voltage: ", e)
@@ -218,7 +218,7 @@ class BS1200(object):
                     break
             for channel in range(1,13):
                 frame, start, end = ((channel-1)//4, 2*((channel-1)%4), 2*((channel-1)%4)+2)
-                cell_volts[channel-1] = self.scale_volts(unpack('<e', rx_frames[frame].data[start:end])[0], True)     
+                cell_volts[channel-1] = self.scale_volts(unpack('<h', rx_frames[frame].data[start:end])[0], True)     
             return cell_volts
 
     def set_cell_I_sink(self, boxid: int, channel: int, sink_current: float) -> Message:
@@ -318,7 +318,7 @@ class BS1200(object):
                     if msg.arbitration_id == readbacks[frame_i].arbitration_id:
                         rx_msg = msg
                         break
-                ai_volts = self.scale_volts(unpack('<e', rx_msg.data[cell_i*2:cell_i*2+2])[0], True)
+                ai_volts = self.scale_volts(unpack('<h', rx_msg.data[cell_i*2:cell_i*2+2])[0], True)
                 return ai_volts
             except pcan.PcanError as e:
                 print("Error getting AI Channel "+str(channel)+" Voltage: ", e)

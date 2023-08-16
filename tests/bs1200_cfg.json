@@ -1,6 +1,6 @@
 {
     "Protocol" : "CAN",
-    "Updated_IP" : "192.168.1.102",
+    "IP_Address" : "192.168.1.102",
     "Ethernet_Settings" : 
     {
         "TCP_Cmd_Port"      : 12345,
