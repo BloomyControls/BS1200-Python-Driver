@@ -151,7 +151,7 @@ def cell_current_set_all(box_id, I_sink_all: int, I_source_all: int) -> Message:
     Generates a message to set the source and sinking current for all cells
     """
     try: 
-        arb_id = 1125 + box_id
+        arb_id = 1152 + box_id
         curr_vals = I_sink_all.to_bytes(2, 'little')+I_source_all.to_bytes(2, 'little')
         frame = Message(arbitration_id= arb_id, 
                         is_extended_id = False, 
