@@ -1,6 +1,6 @@
 [project]
 name = "BS1200_driver"
-version = "1.2.11"
+version = "1.2.12"
 authors = [{ name = "Mikhail Kharitonov", email = "mikhail.kharitonov@bloomy.com"}]
 description= "Python interface to the Bloomy BS1200"
 readme = "README.md"
