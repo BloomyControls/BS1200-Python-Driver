@@ -1,10 +1,10 @@
 [project]
 name = "BS1200_driver"
-version = "1.2.12"
+version = "1.2.13"
 authors = [{ name = "Mikhail Kharitonov", email = "mikhail.kharitonov@bloomy.com"}]
 description= "Python interface to the Bloomy BS1200"
 readme = "README.md"
-dependencies = ["python-can==4.0", "uptime", "nisyscfg"]
+dependencies = ["python-can==4.0", "uptime", "nisyscfg", "paramiko", "scp"]
 
 [project_urls]
 "Homepage" = "https://github.com/BloomyControls/BS1200-Python-Driver"
