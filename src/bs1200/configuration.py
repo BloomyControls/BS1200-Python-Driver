@@ -22,6 +22,32 @@ class ConfigTools(object):
         self.FTP = FtpHelper(tgt_address, username, password)
         self.ini_parser = ConfigParser()
 
+    def getFile(self, tgt_file: str, dest: str):
+        #First try the FTP, if this fails to connect use SCP
+        try:
+            local_copy = self.FTP.getFile(tgt_file, dest)
+        except:
+            #if error from FTP, use SCP via SSH 
+            #fix the path to ni-rt.ini if  ni-rt linux is target
+            if("ni-rt.ini" in tgt_file):
+                tgt_file = "etc/natinst/share/ni-rt.ini"
+            with ScpHelper(self.ip_address, self.user, self.pwd) as s:
+                local_copy = s.getFile(tgt_file, dest)
+        finally:
+            return local_copy
+
+    def uploadFile(self, tgt, dest_path):
+        #First try the FTP, if this fails to connect use SCP
+        try:
+            self.FTP.uploadFile(tgt, dest_path)
+        except:
+            #if error from FTP, use SCP via SSH 
+            #fix the path to ni-rt.ini if  ni-rt linux is target
+            if("ni-rt.ini" in dest_path):
+                dest_path = "etc/natinst/share/ni-rt.ini"
+            with ScpHelper(self.ip_address, self.user, self.pwd) as s:
+                s.uploadFile(tgt, dest_path)
+
     def apply_config_file(self, cfg_file_path, restart: bool = True):
         """
         Takes in a .json file with BS1200 configuration object in the following format
@@ -78,27 +104,28 @@ class ConfigTools(object):
         can = self.get_can_settings()
         mode = self.get_protocol()
         interlock = self.interlock_enabled()
-        config = {'Protocol' : mode, 'IP_Address' : ethernet.IP_Address,
-                'Ethernet_Settings':{
-                    'TCP_Cmd_Port'      : ethernet.Command_Port,
-                    'TCP_Cmd_Interval_ms'  : ethernet.Command_Interval_ms,
-                    'UDP_Read_Port'     : ethernet.Reporting_Port,
-                    'UDP_Read_Interval_ms' : ethernet.Reporting_Interval_ms 
-                },
-                'CAN_Settings': 
-                {
-                    'Box_ID'            : can.box_id,
-                    'Write_Period_ms'   : int(can.publish_period_us/1000)
-                },
-                'Enable_SafetyInterlock' : interlock
-            }
+        config = {
+            'Protocol' : mode, 
+            'IP_Address' : ethernet.IP_Address,
+            'Ethernet_Settings':
+            {
+                'TCP_Cmd_Port'      : ethernet.Command_Port,
+                'TCP_Cmd_Interval_ms'  : ethernet.Command_Interval_ms,
+                'UDP_Read_Port'     : ethernet.Reporting_Port,
+                'UDP_Read_Interval_ms' : ethernet.Reporting_Interval_ms 
+            },
+            'CAN_Settings': 
+            {
+                'Box_ID'            : can.box_id,
+                'Write_Period_ms'   : int(can.publish_period_us/1000)
+            },
+            'Enable_SafetyInterlock' : interlock
+        }
         if export_to_file:
             with open(file_name, 'w') as f:
                 f.write(json.dumps(config, indent=4))
         return json.dumps(config)
         
-        
-
     def apply_general_settings(self, protocol: Protocol, restart: bool = True):
         """
         Sets the protocol used by the target BS1200 unit
@@ -106,7 +133,8 @@ class ConfigTools(object):
         """
         rt_path = "/ni-rt/startup/Configuration Files/General Settings.xml"
         temp_path =  "General Settings.xml"
-        cfgfile_path = self.FTP.getFile(rt_path, temp_path)
+        
+        cfgfile_path = self.retrieveFile(rt_path, temp_path)
         #build an XML tree for the xml file 
         ET.register_namespace("", "http://www.ni.com/LVData") 
         tree = ET.parse(cfgfile_path)
@@ -120,12 +148,12 @@ class ConfigTools(object):
         tree.write(cfgfile_path, encoding="utf-8", xml_declaration=True, short_empty_elements=False)
         #replace the configuration file on the target
         self.__replace_xml_declaration(cfgfile_path)
-        self.FTP.uploadFile(cfgfile_path, rt_path)
-        #restart unit by default
+        self.uploadFile(cfgfile_path, rt_path)
+        
         os.remove(temp_path)
+        #restart unit by default
         if restart: 
             self.__restart_unit()
-
 
     def apply_ethernet_settings(self, tcpip_cfg: Ethernet_Settings, restart: bool = True):
         """
@@ -142,7 +170,6 @@ class ConfigTools(object):
         if restart:
             self.__restart_unit()
         
-
     def apply_can_config(self, can_cfg: CAN_Settings, restart: bool = True):
         """
         Applies the provided CAN Settings to the startup configuration, 
@@ -150,7 +177,7 @@ class ConfigTools(object):
         """
         rt_path = "/ni-rt/startup/Data/BS1200 Configuration.ini"
         temp_path =  "BS1200 Configuration.ini"
-        cfgfile_path = self.FTP.getFile(rt_path, temp_path)
+        cfgfile_path = self.getFile(rt_path, temp_path)
         self.__fix_XML_tags(cfgfile_path)
         #build an XML tree for the .ini file 🤦‍♂️ 
         tree = ET.parse(cfgfile_path)
@@ -163,7 +190,7 @@ class ConfigTools(object):
         tree.write(cfgfile_path, encoding="utf-8", xml_declaration=True, short_empty_elements=False)
         #replace the configuration file on the target
         self.__replace_xml_declaration(cfgfile_path)
-        self.FTP.uploadFile(cfgfile_path, rt_path)
+        self.uploadFile(cfgfile_path, rt_path)
         os.remove(temp_path)
         #restart unit by default
         if restart: 
@@ -175,7 +202,7 @@ class ConfigTools(object):
         """
         rt_path = "/ni-rt/startup/Data/BS1200 Configuration.ini"
         temp_path =  "BS1200 Configuration.ini"
-        cfgfile_path = self.FTP.getFile(rt_path, temp_path)
+        cfgfile_path = self.getFile(rt_path, temp_path)
         self.__fix_XML_tags(cfgfile_path)
         #build an XML tree for the .ini file 🤦‍♂️ 
         tree = ET.parse(cfgfile_path)
@@ -186,7 +213,7 @@ class ConfigTools(object):
         tree.write(cfgfile_path, encoding="utf-8", xml_declaration=True, short_empty_elements=False)
         #replace the configuration file on the target
         self.__replace_xml_declaration(cfgfile_path)
-        self.FTP.uploadFile(cfgfile_path, rt_path)
+        self.uploadFile(cfgfile_path, rt_path)
         os.remove(temp_path)
         #restart unit by default
         if restart: 
@@ -201,7 +228,7 @@ class ConfigTools(object):
         if("255" in new_ip_address):
             raise ValueError("Broadcast bytes are not allowed for the unit IP address")
         #get the ni-rt.ini file from the BS1200 controller root directory
-        self.FTP.getFile('ni-rt.ini', 'ni-rt.ini')
+        self.getFile('ni-rt.ini', 'ni-rt.ini')
         #open the local copy of the cfg file and set the IP Address parameter of the
         #TCP_STACK_CONFIG section
         self.ini_parser.read('ni-rt.ini')
@@ -210,11 +237,10 @@ class ConfigTools(object):
         with open('ni-rt.ini', 'w') as file:
             self.ini_parser.write(file)
         #Send the file back to the target BS1200, replacing the entire file
-        self.FTP.uploadFile('ni-rt.ini', 'ni-rt.ini')
+        self.uploadFile('ni-rt.ini', 'ni-rt.ini')
         #remove local copy of cfg file and update the FTP helper's stored target address
         os.remove('ni-rt.ini')
         self.FTP.tgt_address = self.ip_address = new_ip_address
-
 
     def set_tcp_settings(self, ip_address : str, cmd_port: int, cmd_interval_ms: int):
         """
@@ -222,7 +248,7 @@ class ConfigTools(object):
         """
         rt_path = "/ni-rt/startup/Configuration Files/TCP Settings.xml"
         temp_path =  "TCP Settings.xml"
-        cfgfile_path = self.FTP.getFile(rt_path, temp_path)
+        cfgfile_path = self.getFile(rt_path, temp_path)
         #build an XML tree for the xml file 
         ET.register_namespace("", "http://www.ni.com/LVData") 
         tree = ET.parse(cfgfile_path)
@@ -245,9 +271,8 @@ class ConfigTools(object):
         tree.write(cfgfile_path, encoding="utf-8", xml_declaration=True, short_empty_elements=False)
         self.__replace_xml_declaration(cfgfile_path)
         #replace the configuration file on the target
-        self.FTP.uploadFile(cfgfile_path, rt_path)
+        self.uploadFile(cfgfile_path, rt_path)
         os.remove(temp_path)
-
 
     def set_udp_settings(self, rep_port: int, rep_interval_ms: int):
         """
@@ -255,7 +280,7 @@ class ConfigTools(object):
         """
         rt_path = "/ni-rt/startup/Configuration Files/UDP Settings.xml"
         temp_path =  "UDP Settings.xml"
-        cfgfile_path = self.FTP.getFile(rt_path, temp_path)
+        cfgfile_path = self.getFile(rt_path, temp_path)
         #build an XML tree for the xml file 
         ET.register_namespace("", "http://www.ni.com/LVData") 
         tree = ET.parse(cfgfile_path)
@@ -273,7 +298,7 @@ class ConfigTools(object):
         tree.write(cfgfile_path, encoding="utf-8", xml_declaration=True, short_empty_elements=False)
         self.__replace_xml_declaration(cfgfile_path)
         #replace the configuration file on the target
-        self.FTP.uploadFile(cfgfile_path, rt_path)
+        self.uploadFile(cfgfile_path, rt_path)
         os.remove(temp_path)
     
     def get_can_settings(self):
@@ -282,7 +307,7 @@ class ConfigTools(object):
         """
         rt_path = "/ni-rt/startup/Data/BS1200 Configuration.ini"
         temp_path =  "BS1200 Configuration.ini"
-        cfgfile_path = self.FTP.getFile(rt_path, temp_path)
+        cfgfile_path = self.getFile(rt_path, temp_path)
         self.__fix_XML_tags(cfgfile_path)
         #build an XML tree for the .ini file 🤦‍♂️ 
         tree = ET.parse(cfgfile_path)
@@ -294,7 +319,7 @@ class ConfigTools(object):
         """
         Retreive the ethernet settings and IP address from the target device
         """
-        self.FTP.getFile('ni-rt.ini', 'ni-rt.ini')
+        self.getFile('ni-rt.ini', 'ni-rt.ini')
         #open the local copy of the cfg file and set the IP Address parameter of the
         #TCP_STACK_CONFIG section
         self.ini_parser.read('ni-rt.ini')
@@ -305,8 +330,8 @@ class ConfigTools(object):
         temp_path1 =  "TCP Settings.xml"
         temp_path2 =  "UDP Settings.xml"
 
-        tcp_cfgfile_path = self.FTP.getFile(tcp_path, temp_path1)
-        udp_cfgfile_path = self.FTP.getFile(udp_path, temp_path2)
+        tcp_cfgfile_path = self.getFile(tcp_path, temp_path1)
+        udp_cfgfile_path = self.getFile(udp_path, temp_path2)
         #build an XML tree for the xml file 
         ET.register_namespace("", "http://www.ni.com/LVData") 
         tcp_tree = ET.parse(tcp_cfgfile_path)
@@ -342,7 +367,7 @@ class ConfigTools(object):
         """
         rt_path = "/ni-rt/startup/Data/BS1200 Configuration.ini"
         temp_path =  "BS1200 Configuration.ini"
-        cfgfile_path = self.FTP.getFile(rt_path, temp_path)
+        cfgfile_path = self.getFile(rt_path, temp_path)
         self.__fix_XML_tags(cfgfile_path)
         #build an XML tree for the .ini file 🤦‍♂️ 
         tree = ET.parse(cfgfile_path)
@@ -350,14 +375,13 @@ class ConfigTools(object):
         os.remove(temp_path)
         return True if root[3].text == "TRUE" else False
 
-
     def get_protocol(self):
         """
         Get the procotol form the general settings
         """
         rt_path = "/ni-rt/startup/Configuration Files/General Settings.xml"
         temp_path =  "General Settings.xml"
-        cfgfile_path = self.FTP.getFile(rt_path, temp_path)
+        cfgfile_path = self.getFile(rt_path, temp_path)
         #build an XML tree for the xml file 
         ET.register_namespace("", "http://www.ni.com/LVData") 
         tree = ET.parse(cfgfile_path)

@@ -1,5 +1,7 @@
 from ftplib import FTP
 from dataclasses import dataclass
+from paramiko import SSHClient
+from scp import SCPClient
 
 class FtpHelper(object):
     """
@@ -18,7 +20,7 @@ class FtpHelper(object):
                     retr = f.retrbinary(f"RETR {tgt_path}", file.write)
             return dest_path
         except Exception as e:
-            print(e)
+            raise e
 
     def uploadFile(self, src_path, tgt_path):
         try:
@@ -26,7 +28,54 @@ class FtpHelper(object):
                 with open(src_path, "rb") as file:
                     f.storbinary(f"STOR {tgt_path}", file)
         except Exception as e:
+            raise e
+
+class ScpHelper(object):
+    """
+    Class used to wrap SSH and SCP file transfer for sbRIO 9603 controllers. Call using 'with' statements, or call open
+    """
+    def __init__(self, tgt: str, user: str, password : str):
+        self.tgt_address = tgt
+        self.username = user
+        self.password = password
+
+    def __enter__(self):
+        try:
+            self.open()
+        except Exception as e:
             print(e)
+
+    def __exit__(self):
+        self.close()
+
+    def open(self):
+        """Open """
+        self.ssh = SSHClient()
+        self.ssh.load_system_host_keys()
+        self.ssh.connect(self.tgt_address)
+        # SCPCLient takes a paramiko transport as an argument
+        self.scp = SCPClient(self.ssh.get_transport())
+
+    def close(self):
+        """Close SCP and SSH connections"""
+        self.scp.close()
+        self.ssh.close()
+    
+    def getFile(self, tgt_path, dest_path) -> str:
+        try:
+            with self.scp as s:
+                s.get(remote_path=tgt_path, local_path=dest_path)
+            return dest_path
+        except Exception as e:
+            print(e)
+
+    def uploadFile(self, src_path, tgt_path):
+        try:
+            with self.scp as s:
+                s.put(files=src_path, remote_path=tgt_path)
+        except Exception as e:
+            print(e)
+
 
 @dataclass
 class Ethernet_Settings:
