@@ -13,6 +13,7 @@ class BS1200(object):
     """
 
     def __init__(self, unit_ids: list) -> None:
+        #Give BoxIDs OR Ip Addrs and init interface based on non-default value
         cfg = {'fd': False, 'f_clock_mhz' : 20}
         unit_ids.sort()
         self.box_ids = []

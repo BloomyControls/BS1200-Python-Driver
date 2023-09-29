@@ -428,5 +428,10 @@ def ai_get_5_8(box_id: int) -> Message:
     except ValueError as e:
         print("Error constructing AI_Readback_5_8 frame", e)
 
-
+#CAN Frame
+#ui32        4 bytes
+#bool        1 byte 
+#U8          1 byte
+#ARRAY_U8[8] 8 bytes
+#    length: 14 bytes
 

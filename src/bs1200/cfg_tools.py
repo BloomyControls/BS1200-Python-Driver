@@ -1,6 +1,6 @@
 from ftplib import FTP
 from dataclasses import dataclass
-from paramiko import SSHClient
+from paramiko import SSHClient, AutoAddPolicy
 from scp import SCPClient
 
 class FtpHelper(object):
@@ -12,7 +12,7 @@ class FtpHelper(object):
         self.username = user
         self.password = password
 
-    def getFile(self, tgt_path, dest_path) -> str:
+    def get_file(self, tgt_path, dest_path) -> str:
         try:
             with FTP(self.tgt_address, self.username, self.password) as f:
                 with open(dest_path, "wb") as file:
@@ -22,7 +22,7 @@ class FtpHelper(object):
         except Exception as e:
             raise e
 
-    def uploadFile(self, src_path, tgt_path):
+    def upload_file(self, src_path, tgt_path):
         try:
             with FTP(self.tgt_address, self.username, self.password) as f:
                 with open(src_path, "rb") as file:
@@ -32,27 +32,32 @@ class FtpHelper(object):
 
 class ScpHelper(object):
     """
-    Class used to wrap SSH and SCP file transfer for sbRIO 9603 controllers. Call using 'with' statements, or call open
+    Class used to wrap SSH and SCP file transfer for sbRIO 9603 controllers. 
+    Call using 'with' statements, or call open
     """
     def __init__(self, tgt: str, user: str, password : str):
         self.tgt_address = tgt
         self.username = user
         self.password = password
 
-    def __enter__(self):
+    def __enter__(self, *args, **kwargs):
         try:
             self.open()
         except Exception as e:
             print(e)
+        return self
 
-    def __exit__(self):
+    def __exit__(self, *args, **kwargs):
         self.close()
 
     def open(self):
         """Open """
         self.ssh = SSHClient()
         self.ssh.load_system_host_keys()
-        self.ssh.connect(self.tgt_address)
+        self.ssh.set_missing_host_key_policy(AutoAddPolicy())
+        self.ssh.connect(self.tgt_address, 
+                        username=self.username, 
+                        password=self.password)
         # SCPCLient takes a paramiko transport as an argument
         self.scp = SCPClient(self.ssh.get_transport())
 
@@ -61,7 +66,7 @@ class ScpHelper(object):
         self.scp.close()
         self.ssh.close()
     
-    def getFile(self, tgt_path, dest_path) -> str:
+    def get_file(self, tgt_path, dest_path) -> str:
         try:
             with self.scp as s:
                 s.get(remote_path=tgt_path, local_path=dest_path)
@@ -69,7 +74,7 @@ class ScpHelper(object):
         except Exception as e:
             print(e)
 
-    def uploadFile(self, src_path, tgt_path):
+    def upload_file(self, src_path, tgt_path):
         try:
             with self.scp as s:
                 s.put(files=src_path, remote_path=tgt_path)

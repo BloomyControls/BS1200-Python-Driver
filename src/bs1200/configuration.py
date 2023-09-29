@@ -22,36 +22,38 @@ class ConfigTools(object):
         self.FTP = FtpHelper(tgt_address, username, password)
         self.ini_parser = ConfigParser()
 
-    def getFile(self, tgt_file: str, dest: str):
+    def retrieve_file(self, tgt_file: str, dest: str):
         #First try the FTP, if this fails to connect use SCP
         try:
-            local_copy = self.FTP.getFile(tgt_file, dest)
+            local_copy = self.FTP.get_file(tgt_file, dest)
         except:
             #if error from FTP, use SCP via SSH 
             #fix the path to ni-rt.ini if  ni-rt linux is target
+            print("Could not connect to target via FTP, using SCP")
             if("ni-rt.ini" in tgt_file):
-                tgt_file = "etc/natinst/share/ni-rt.ini"
+                tgt_file = "/etc/natinst/share/ni-rt.ini"
             with ScpHelper(self.ip_address, self.user, self.pwd) as s:
-                local_copy = s.getFile(tgt_file, dest)
+                local_copy = s.get_file(tgt_file, dest)
         finally:
             return local_copy
 
-    def uploadFile(self, tgt, dest_path):
+    def send_file(self, tgt, dest_path):
         #First try the FTP, if this fails to connect use SCP
         try:
-            self.FTP.uploadFile(tgt, dest_path)
+            self.FTP.upload_file(tgt, dest_path)
         except:
             #if error from FTP, use SCP via SSH 
             #fix the path to ni-rt.ini if  ni-rt linux is target
             if("ni-rt.ini" in dest_path):
-                dest_path = "etc/natinst/share/ni-rt.ini"
+                dest_path = "/etc/natinst/share/ni-rt.ini"
             with ScpHelper(self.ip_address, self.user, self.pwd) as s:
-                s.uploadFile(tgt, dest_path)
+                s.upload_file(tgt, dest_path)
 
     def apply_config_file(self, cfg_file_path, restart: bool = True):
         """
-        Takes in a .json file with BS1200 configuration object in the following format
-        and applies the parsed settings. By default the target device is restarted after applying
+        Takes in a .json file with BS1200 configuration object in the 
+        following format and applies the parsed settings. 
+        By default the target device is restarted after applying
         configuration changes.
         BS1200_Configuration:
         {
@@ -75,8 +77,11 @@ class ConfigTools(object):
         with open(cfg_file_path) as json_file:
             config = json.load(json_file)
 
-        mode =  Protocol.CAN if (config["Protocol"] == "CAN")  else Protocol.Ethernet
-        can_cfg = CAN_Settings(config["CAN_Settings"]["Box_ID"], int(config["CAN_Settings"]["Write_Period_ms"]*1000))
+        mode =  (Protocol.CAN if (config["Protocol"] == "CAN") 
+                 else Protocol.Ethernet)
+        can_cfg = CAN_Settings(config["CAN_Settings"]["Box_ID"], 
+            int(config["CAN_Settings"]["Write_Period_ms"]*1000))
+        
         eth_cfg = Ethernet_Settings(config["IP_Address"], 
             config["Ethernet_Settings"]['TCP_Cmd_Port'], 
             config["Ethernet_Settings"]['TCP_Cmd_Interval_ms'], 
@@ -97,8 +102,9 @@ class ConfigTools(object):
     def get_all_settings(self, export_to_file: bool,
                                file_name: str = "bs1200_cfg.json") -> str:
         """
-        Returns a prettyified JSON string of the BS1200 configuration values, optionally exporting to
-        a generated bs1200_cfg.json file at the path the method is executed from.
+        Returns a prettyified JSON string of the BS1200 configuration values,
+        optionally exporting to a generated bs1200_cfg.json file at the 
+        path the method is executed from.
         """
         ethernet = self.get_ethernet_settings()
         can = self.get_can_settings()
@@ -134,7 +140,7 @@ class ConfigTools(object):
         rt_path = "/ni-rt/startup/Configuration Files/General Settings.xml"
         temp_path =  "General Settings.xml"
         
-        cfgfile_path = self.retrieveFile(rt_path, temp_path)
+        cfgfile_path = self.retrieve_file(rt_path, temp_path)
         #build an XML tree for the xml file 
         ET.register_namespace("", "http://www.ni.com/LVData") 
         tree = ET.parse(cfgfile_path)
@@ -145,25 +151,31 @@ class ConfigTools(object):
                     if 'Val' in child.tag:
                         child.text = str(protocol)
         #Rewrite the temp config file
-        tree.write(cfgfile_path, encoding="utf-8", xml_declaration=True, short_empty_elements=False)
+        tree.write(cfgfile_path, encoding="utf-8", 
+                   xml_declaration=True, 
+                   short_empty_elements=False)
         #replace the configuration file on the target
         self.__replace_xml_declaration(cfgfile_path)
-        self.uploadFile(cfgfile_path, rt_path)
+        self.send_file(cfgfile_path, rt_path)
         
         os.remove(temp_path)
         #restart unit by default
         if restart: 
             self.__restart_unit()
 
-    def apply_ethernet_settings(self, tcpip_cfg: Ethernet_Settings, restart: bool = True):
+    def apply_ethernet_settings(self, tcpip_cfg: Ethernet_Settings, 
+                                restart: bool = True):
         """
-        Applies the provided TCP and UDP ethernet stack settings, and updates the IP address of
-        the target BS1200 unit
+        Applies the provided TCP and UDP ethernet stack settings, 
+        and updates the IP address of the target BS1200 unit
         """
         #update the TCP Settings file
-        self.set_tcp_settings(tcpip_cfg.IP_Address, tcpip_cfg.Command_Port, tcpip_cfg.Command_Interval_ms)
+        self.set_tcp_settings(tcpip_cfg.IP_Address,
+                              tcpip_cfg.Command_Port, 
+                              tcpip_cfg.Command_Interval_ms)
         #update the UDP Settings file
-        self.set_udp_settings(tcpip_cfg.Reporting_Port, tcpip_cfg.Reporting_Interval_ms)
+        self.set_udp_settings(tcpip_cfg.Reporting_Port, 
+                              tcpip_cfg.Reporting_Interval_ms)
         #update the configured IP Address
         self.set_ip_address(tcpip_cfg.IP_Address)
         #restart if requested
@@ -177,7 +189,7 @@ class ConfigTools(object):
         """
         rt_path = "/ni-rt/startup/Data/BS1200 Configuration.ini"
         temp_path =  "BS1200 Configuration.ini"
-        cfgfile_path = self.getFile(rt_path, temp_path)
+        cfgfile_path = self.retrieve_file(rt_path, temp_path)
         self.__fix_XML_tags(cfgfile_path)
         #build an XML tree for the .ini file 🤦‍♂️ 
         tree = ET.parse(cfgfile_path)
@@ -187,10 +199,12 @@ class ConfigTools(object):
         #Replace Publish Period
         root[0][4].text = str(can_cfg.publish_period_us)
         #Rewrite the temp config file
-        tree.write(cfgfile_path, encoding="utf-8", xml_declaration=True, short_empty_elements=False)
+        tree.write(cfgfile_path, encoding="utf-8", 
+                   xml_declaration=True, 
+                   short_empty_elements=False)
         #replace the configuration file on the target
         self.__replace_xml_declaration(cfgfile_path)
-        self.uploadFile(cfgfile_path, rt_path)
+        self.send_file(cfgfile_path, rt_path)
         os.remove(temp_path)
         #restart unit by default
         if restart: 
@@ -202,7 +216,7 @@ class ConfigTools(object):
         """
         rt_path = "/ni-rt/startup/Data/BS1200 Configuration.ini"
         temp_path =  "BS1200 Configuration.ini"
-        cfgfile_path = self.getFile(rt_path, temp_path)
+        cfgfile_path = self.retrieve_file(rt_path, temp_path)
         self.__fix_XML_tags(cfgfile_path)
         #build an XML tree for the .ini file 🤦‍♂️ 
         tree = ET.parse(cfgfile_path)
@@ -210,10 +224,12 @@ class ConfigTools(object):
         #Replace Enable_Cell_Inhibit
         root[3].text = "TRUE" if interlock else "FALSE"
         #Rewrite the temp config file
-        tree.write(cfgfile_path, encoding="utf-8", xml_declaration=True, short_empty_elements=False)
+        tree.write(cfgfile_path, encoding="utf-8", 
+                   xml_declaration=True, 
+                   short_empty_elements=False)
         #replace the configuration file on the target
         self.__replace_xml_declaration(cfgfile_path)
-        self.uploadFile(cfgfile_path, rt_path)
+        self.send_file(cfgfile_path, rt_path)
         os.remove(temp_path)
         #restart unit by default
         if restart: 
@@ -221,34 +237,39 @@ class ConfigTools(object):
 
     def set_ip_address(self, new_ip_address: str):
         """
-        Sets a new IP Address for the target BS1200, restarting the unit and updating
-        the ip address used by the ConfigTools for further configuration method calls
+        Sets a new IP Address for the target BS1200, restarting the unit 
+        and updating the ip address used by the ConfigTools for further 
+        configuration method calls
         """
         #no broadcast bytes allowed
         if("255" in new_ip_address):
             raise ValueError("Broadcast bytes are not allowed for the unit IP address")
         #get the ni-rt.ini file from the BS1200 controller root directory
-        self.getFile('ni-rt.ini', 'ni-rt.ini')
+        self.retrieve_file('ni-rt.ini', 'ni-rt.ini')
         #open the local copy of the cfg file and set the IP Address parameter of the
         #TCP_STACK_CONFIG section
         self.ini_parser.read('ni-rt.ini')
-        self.ini_parser['TCP_STACK_CONFIG']['IP_Address'] = new_ip_address
+        try:
+            self.ini_parser['TCP_STACK_CONFIG']['IP_Address'] = new_ip_address
+        except:
+            self.ini_parser['eth0']['IP_Address'] = new_ip_address
         #Rewrite the local copy of the ini file
         with open('ni-rt.ini', 'w') as file:
             self.ini_parser.write(file)
         #Send the file back to the target BS1200, replacing the entire file
-        self.uploadFile('ni-rt.ini', 'ni-rt.ini')
+        self.send_file('ni-rt.ini', 'ni-rt.ini')
         #remove local copy of cfg file and update the FTP helper's stored target address
         os.remove('ni-rt.ini')
         self.FTP.tgt_address = self.ip_address = new_ip_address
 
-    def set_tcp_settings(self, ip_address : str, cmd_port: int, cmd_interval_ms: int):
+    def set_tcp_settings(self, ip_address : str, 
+                         cmd_port: int, cmd_interval_ms: int):
         """
         Update the TCP related settings in the Ethernet configuration
         """
         rt_path = "/ni-rt/startup/Configuration Files/TCP Settings.xml"
         temp_path =  "TCP Settings.xml"
-        cfgfile_path = self.getFile(rt_path, temp_path)
+        cfgfile_path = self.retrieve_file(rt_path, temp_path)
         #build an XML tree for the xml file 
         ET.register_namespace("", "http://www.ni.com/LVData") 
         tree = ET.parse(cfgfile_path)
@@ -268,10 +289,12 @@ class ConfigTools(object):
             if(item.text == 'Loop Time ms'):
                 next(iterator).text = str(cmd_interval_ms)
         #Rewrite the temp config file
-        tree.write(cfgfile_path, encoding="utf-8", xml_declaration=True, short_empty_elements=False)
+        tree.write(cfgfile_path, encoding="utf-8", 
+                   xml_declaration=True, 
+                   short_empty_elements=False)
         self.__replace_xml_declaration(cfgfile_path)
         #replace the configuration file on the target
-        self.uploadFile(cfgfile_path, rt_path)
+        self.send_file(cfgfile_path, rt_path)
         os.remove(temp_path)
 
     def set_udp_settings(self, rep_port: int, rep_interval_ms: int):
@@ -280,7 +303,7 @@ class ConfigTools(object):
         """
         rt_path = "/ni-rt/startup/Configuration Files/UDP Settings.xml"
         temp_path =  "UDP Settings.xml"
-        cfgfile_path = self.getFile(rt_path, temp_path)
+        cfgfile_path = self.retrieve_file(rt_path, temp_path)
         #build an XML tree for the xml file 
         ET.register_namespace("", "http://www.ni.com/LVData") 
         tree = ET.parse(cfgfile_path)
@@ -295,10 +318,12 @@ class ConfigTools(object):
             if(item.text == 'Loop Delay RT ms'):
                 next(iterator).text = str(rep_interval_ms)
         #Rewrite the temp config file
-        tree.write(cfgfile_path, encoding="utf-8", xml_declaration=True, short_empty_elements=False)
+        tree.write(cfgfile_path, encoding="utf-8", 
+                   xml_declaration=True, 
+                   short_empty_elements=False)
         self.__replace_xml_declaration(cfgfile_path)
         #replace the configuration file on the target
-        self.uploadFile(cfgfile_path, rt_path)
+        self.send_file(cfgfile_path, rt_path)
         os.remove(temp_path)
     
     def get_can_settings(self):
@@ -307,7 +332,7 @@ class ConfigTools(object):
         """
         rt_path = "/ni-rt/startup/Data/BS1200 Configuration.ini"
         temp_path =  "BS1200 Configuration.ini"
-        cfgfile_path = self.getFile(rt_path, temp_path)
+        cfgfile_path = self.retrieve_file(rt_path, temp_path)
         self.__fix_XML_tags(cfgfile_path)
         #build an XML tree for the .ini file 🤦‍♂️ 
         tree = ET.parse(cfgfile_path)
@@ -319,19 +344,22 @@ class ConfigTools(object):
         """
         Retreive the ethernet settings and IP address from the target device
         """
-        self.getFile('ni-rt.ini', 'ni-rt.ini')
-        #open the local copy of the cfg file and set the IP Address parameter of the
-        #TCP_STACK_CONFIG section
-        self.ini_parser.read('ni-rt.ini')
-        ip = self.ini_parser['TCP_STACK_CONFIG']['IP_Address'].strip('"')
-        
+        ini_cfg = self.retrieve_file('ni-rt.ini', 'ni-rt.ini')
+        #open the local copy of the cfg file and set the IP Address parameter
+        #of the #TCP_STACK_CONFIG or eth0 section
+        self.ini_parser.read(ini_cfg)
+        try:
+            ip = self.ini_parser['TCP_STACK_CONFIG']['IP_Address'].strip('"')
+        except:
+            ip = self.ini_parser['eth0']['IP_Address'].strip('"')
+            
         tcp_path = "/ni-rt/startup/Configuration Files/TCP Settings.xml"
         udp_path = "/ni-rt/startup/Configuration Files/UDP Settings.xml"
         temp_path1 =  "TCP Settings.xml"
         temp_path2 =  "UDP Settings.xml"
 
-        tcp_cfgfile_path = self.getFile(tcp_path, temp_path1)
-        udp_cfgfile_path = self.getFile(udp_path, temp_path2)
+        tcp_cfgfile_path = self.retrieve_file(tcp_path, temp_path1)
+        udp_cfgfile_path = self.retrieve_file(udp_path, temp_path2)
         #build an XML tree for the xml file 
         ET.register_namespace("", "http://www.ni.com/LVData") 
         tcp_tree = ET.parse(tcp_cfgfile_path)
@@ -367,7 +395,7 @@ class ConfigTools(object):
         """
         rt_path = "/ni-rt/startup/Data/BS1200 Configuration.ini"
         temp_path =  "BS1200 Configuration.ini"
-        cfgfile_path = self.getFile(rt_path, temp_path)
+        cfgfile_path = self.retrieve_file(rt_path, temp_path)
         self.__fix_XML_tags(cfgfile_path)
         #build an XML tree for the .ini file 🤦‍♂️ 
         tree = ET.parse(cfgfile_path)
@@ -381,7 +409,7 @@ class ConfigTools(object):
         """
         rt_path = "/ni-rt/startup/Configuration Files/General Settings.xml"
         temp_path =  "General Settings.xml"
-        cfgfile_path = self.getFile(rt_path, temp_path)
+        cfgfile_path = self.retrieve_file(rt_path, temp_path)
         #build an XML tree for the xml file 
         ET.register_namespace("", "http://www.ni.com/LVData") 
         tree = ET.parse(cfgfile_path)
@@ -391,6 +419,7 @@ class ConfigTools(object):
                 for child in item:
                     if 'Val' in child.tag:
                         mode = child.text
+        os.remove(cfgfile_path)
         return "CAN" if mode =='0' else "Ethernet"
     
     def __restart_unit(self):
@@ -398,14 +427,14 @@ class ConfigTools(object):
         Use nisyscfg library to restart the target unit
         """
         #open a nisyscfg session to the BS1200 to restart it
-        with nisyscfg.Session(self.ip_address, self.user, self.pwd) as s:
+        with nisyscfg.Session(self.ip_address, self.user, self.pwd) as s:      
             #updates IP address for the ConfigTools instance to the new IP address once restart complete
             ev = self.__start_anim(f"Restarting BS1200 ({self.ip_address})... ")
             self.ip_address = s.restart()
             ev.set()
             #do this again just in case
             self.FTP.tgt_address = self.ip_address
-            print("\n"+f"BS1200 at {self.ip_address} is back online")
+            print("\r\n"+f"BS1200 at {self.ip_address} is back online")
 
     def __animate(self, loadingtext: str):
         """Animation loop for the restart wait"""
