@@ -1,6 +1,13 @@
 from struct import pack
 from can import Message
 
+base_rx_arbids = [256, 288, 304, 320, 384, 400, 416, 640, 672, 688]
+base_tx_arbids = [128, 160, 176, 192, 512, 544, 1024, 1152, 1184, 1200, 1280, 1296, 1360]
+
+def init_frame_dict(boxids: list) -> dict:
+    return {id: None for 
+            id in [id+box for id in base_rx_arbids for box in boxids]}
+
 def cell_V_set_1_4(box_id: int, cell_1_4_v: list) -> Message:
     """
     Sets the Voltage Setpoints for Cells 1-4, range 0 to 5 V

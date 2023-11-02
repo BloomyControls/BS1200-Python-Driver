@@ -59,18 +59,18 @@ To initialize the driver, simply create an instance with a integer list of the B
 ```
 from bs1200 import BS1200
 
-test_unit = BS1200([0])
-test_unit.query_system_status(0)
+test_unit = BS1200([1])
+test_unit.query_system_status(1)
 test_unit.close()
 ``` 
 Or an equivalent statement using the Python 'with' structure can be used for the driver:
 ```
 from bs1200 import BS1200
 
-with BS1200([0]) as bs:
-     bs.query_system_status(0)
+with BS1200([1]) as bs:
+     bs.query_system_status(1)
 ```
-for a single BS1200 with the CAN Box ID set to 0.
+for a single BS1200 with the CAN Box ID set to 1.
 Once the object is created, the PCAN bus is initialized and a communication session using the device channel PCAN_USBBUS1 has started. The following action status methods may then be used to interact with the BS1200 bus:
 | Driver Method Name    | Parameters                                                                                                                                                                                                                                                                | Description                                                                                                                                                                                                                                                                                                                                                                                                                             |
 |-----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
