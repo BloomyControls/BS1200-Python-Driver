@@ -8,7 +8,7 @@ with BS1200([box]) as bs:
     bs.query_system_status(box)
     bs.config_can_publishing(box, True, True, True)
     ai_v = bs.readback_ai_all(box)
-    print(bs.ai_v_output_txt.format(*ai_v))
+    print(bs.i_fmt_txt.format(*ai_v))
     bs.config_can_publishing(box, True, False, False)
     bs.hil_mode(box, False)
     dio_directions = 8*[1]
