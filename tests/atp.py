@@ -1,6 +1,4 @@
 from bs1200 import BS1200
-import time
-
 u = [1]
 with BS1200(u, 'PCAN_USBBUS1', 1000000) as units:
 	for unit in range(1,len(u)+1):
