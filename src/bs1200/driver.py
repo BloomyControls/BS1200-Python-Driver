@@ -246,8 +246,7 @@ class BS1200(object):
                 readbacks = [self.rx_cache[288+boxid], 
                              self.rx_cache[304+boxid], 
                              self.rx_cache[320+boxid]]
-                frame_i = channel // 4
-                cell_i = (channel-1) % 4
+                frame_i, cell_i  = (channel-1) // 4, (channel-1) % 4
                 rx_msg = readbacks[frame_i]
                 cell_volts = self.scale_volts(unpack('<H', rx_msg.data[cell_i*2:cell_i*2+2])[0], True)
                 return cell_volts
@@ -359,8 +358,7 @@ class BS1200(object):
             try:
                 readbacks = [self.rx_cache[672+boxid], 
                             self.rx_cache[688+boxid]]
-                frame_i = channel // 4
-                cell_i = (channel-1) % 4
+                frame_i, cell_i  = (channel-1) // 4, (channel-1) % 4
                 rx_msg = readbacks[frame_i]
 
                 ai_volts = self.scale_volts(unpack('<H', rx_msg.data[cell_i*2:cell_i*2+2])[0], True)
