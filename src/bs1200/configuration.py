@@ -258,9 +258,11 @@ class ConfigTools(object):
             self.ini_parser.write(file)
         #Send the file back to the target BS1200, replacing the entire file
         self.send_file('ni-rt.ini', 'ni-rt.ini')
-        #remove local copy of cfg file and update the FTP helper's stored target address
+        #remove local copy of cfg file
         os.remove('ni-rt.ini')
-        self.FTP.tgt_address = self.ip_address = new_ip_address
+
+        #dont update this until we restart the unit with nisyscfg
+        #self.FTP.tgt_address = self.ip_address = new_ip_address
 
     def set_tcp_settings(self, ip_address : str, 
                          cmd_port: int, cmd_interval_ms: int):
@@ -429,11 +431,16 @@ class ConfigTools(object):
         #open a nisyscfg session to the BS1200 to restart it
         with nisyscfg.Session(self.ip_address, self.user, self.pwd) as s:      
             #updates IP address for the ConfigTools instance to the new IP address once restart complete
-            ev = self.__start_anim(f"Restarting BS1200 ({self.ip_address})... ")
-            self.ip_address = s.restart()
-            ev.set()
+            try: 
+                ev = self.__start_anim(f"Restarting BS1200 ({self.ip_address})... ")
+                self.ip_address = s.restart(timeout=60*5)
+            except:
+                print("Issue while restarting unit")
+            finally:
+                ev.set()
             #do this again just in case
             self.FTP.tgt_address = self.ip_address
+            sys.stdout.flush()
             print("\r\n"+f"BS1200 at {self.ip_address} is back online")
 
     def __animate(self, loadingtext: str):
