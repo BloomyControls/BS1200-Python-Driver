@@ -38,6 +38,7 @@ class ConfigTools(object):
                 #if error from FTP, use SCP via SSH 
                 print("Could not connect to target via FTP, using SCP")
                 self.__9603 = True
+                self.SCP.open()
                 if("ni-rt.ini" in tgt_file):
                     tgt_file = "/etc/natinst/share/ni-rt.ini"
                 local_copy = self.SCP.get_file(tgt_file, dest)

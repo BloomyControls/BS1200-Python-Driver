@@ -39,7 +39,7 @@ class ScpHelper(object):
         self.tgt_address = tgt
         self.username = user
         self.password = password
-        self.open()
+        #self.open()
 
     def __enter__(self, *args, **kwargs):
         try:
