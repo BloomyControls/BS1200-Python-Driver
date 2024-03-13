@@ -11,7 +11,7 @@ class FtpHelper(object):
         self.tgt_address = tgt
         self.username = user
         self.password = password
-
+        
     def get_file(self, tgt_path, dest_path) -> str:
         try:
             with FTP(self.tgt_address, self.username, self.password) as f:
@@ -39,6 +39,7 @@ class ScpHelper(object):
         self.tgt_address = tgt
         self.username = user
         self.password = password
+        self.open()
 
     def __enter__(self, *args, **kwargs):
         try:

@@ -20,34 +20,48 @@ class ConfigTools(object):
         self.user = username
         self.pwd = password
         self.FTP = FtpHelper(tgt_address, username, password)
+        self.SCP = ScpHelper(tgt_address, username, password)
         self.ini_parser = ConfigParser()
+        self.__9603 = False
 
     def retrieve_file(self, tgt_file: str, dest: str):
-        #First try the FTP, if this fails to connect use SCP
-        try:
-            local_copy = self.FTP.get_file(tgt_file, dest)
-        except:
-            #if error from FTP, use SCP via SSH 
+        if(self.__9603):
             #fix the path to ni-rt.ini if  ni-rt linux is target
-            print("Could not connect to target via FTP, using SCP")
             if("ni-rt.ini" in tgt_file):
-                tgt_file = "/etc/natinst/share/ni-rt.ini"
-            with ScpHelper(self.ip_address, self.user, self.pwd) as s:
-                local_copy = s.get_file(tgt_file, dest)
-        finally:
-            return local_copy
+                    tgt_file = "/etc/natinst/share/ni-rt.ini"
+            local_copy = self.SCP.get_file(tgt_file, dest)
+        else:
+            #Try the FTP, if this fails to connect use SCP
+            try:
+                local_copy = self.FTP.get_file(tgt_file, dest)
+            except:
+                #if error from FTP, use SCP via SSH 
+                print("Could not connect to target via FTP, using SCP")
+                self.__9603 = True
+                if("ni-rt.ini" in tgt_file):
+                    tgt_file = "/etc/natinst/share/ni-rt.ini"
+                local_copy = self.SCP.get_file(tgt_file, dest)
+        
+        return local_copy
+        
 
     def send_file(self, tgt, dest_path):
-        #First try the FTP, if this fails to connect use SCP
-        try:
-            self.FTP.upload_file(tgt, dest_path)
-        except:
-            #if error from FTP, use SCP via SSH 
+        if(self.__9603):
             #fix the path to ni-rt.ini if  ni-rt linux is target
-            if("ni-rt.ini" in dest_path):
-                dest_path = "/etc/natinst/share/ni-rt.ini"
-            with ScpHelper(self.ip_address, self.user, self.pwd) as s:
-                s.upload_file(tgt, dest_path)
+                if("ni-rt.ini" in dest_path):
+                    dest_path = "/etc/natinst/share/ni-rt.ini"
+                self.SCP.upload_file(tgt, dest_path)
+        else:
+            #Try the FTP, if this fails to connect use SCP
+            try:
+                self.FTP.upload_file(tgt, dest_path)
+            except:
+                #if error from FTP, use SCP via SSH 
+                self.__9603 = True
+                #fix the path to ni-rt.ini if  ni-rt linux is target
+                if("ni-rt.ini" in dest_path):
+                    dest_path = "/etc/natinst/share/ni-rt.ini"
+                self.SCP.upload_file(tgt, dest_path)
 
     def apply_config_file(self, cfg_file_path, restart: bool = True):
         """
@@ -428,6 +442,10 @@ class ConfigTools(object):
         """
         Use nisyscfg library to restart the target unit
         """
+        #need to close SCP helper before restarting so socket isnt force closed
+        if(self.__9603):
+            #print("Closing SCP connection")
+            self.SCP.close() 
         #open a nisyscfg session to the BS1200 to restart it
         with nisyscfg.Session(self.ip_address, self.user, self.pwd) as s:      
             #updates IP address for the ConfigTools instance to the new IP address once restart complete
@@ -442,6 +460,11 @@ class ConfigTools(object):
             self.FTP.tgt_address = self.ip_address
             sys.stdout.flush()
             print("\r\n"+f"BS1200 at {self.ip_address} is back online")
+            sys.stdout.flush()
+            print("\n")
+        if(self.__9603):
+            #print("Reopening SCP connection")
+            self.SCP.open()
 
     def __animate(self, loadingtext: str):
         """Animation loop for the restart wait"""
